@@ -110,18 +110,22 @@ class String
 
         self.length.times { |c| self[c] = prc.call(self[c], c) }
 
-        self
+        self 
     end
 end
 
 def multiply(num_1, num_2)
-    debugger
+
     if num_1 == 0 || num_2 == 0
         0
+    elsif num_2 == 1
+        num_1
     elsif num_2 > num_1
         multiply(num_2, num_1)
-    elsif num_2 <= 1
-        num_1
+    elsif (num_1 < 0) ^ (num_2 < 0)
+        0 - multiply(num_1.abs, num_2.abs)
+    elsif num_1 < 0 && num_2 < 0
+        multiply(num_1.abs, num_2.abs)
     else
         multiply(num_1, num_2 - 1) + num_1
     end
@@ -144,9 +148,35 @@ def lucas_sequence(num, lucas=[])
     end
 end
 
-def prime_factorization(num)
+def prime_factorization(num, primes=[], idx=2)
+    if num < 2
+        return nil
+    end
+
+    if primes.empty?
+        idx += 1 until num % idx == 0
+        primes.push(idx)
+        prime_factorization(num, primes)
+    elsif primes.reduce(:*) / num == 1
+        primes
+    else
+        new_num = num / primes.reduce(:*)
+        idx += 1 until new_num % idx == 0
+        primes.push(idx)
+        prime_factorization(num, primes)
+    end
+
+end
+
+def iterative_prime_factorization(num)
     primes = primes_up_to(approx_square(num))
-    primes.select { |factor| num % factor == 0 }
+    primes.select! { |factor| num % factor == 0 }
+    factors = []
+    while num != 1
+        factor = primes.find { |i| i % num == 0 }
+        factor && num /= factor
+    end
+    factors
 end
 
 def approx_square(num)
@@ -156,8 +186,3 @@ def approx_square(num)
     end
     i
 end
-
-__END__
-rspec ./spec/problems_spec.rb:115 # Recursion Problems #multiply(num_1, num_2) should return the product of the two numbers
-rspec ./spec/problems_spec.rb:127 # Recursion Problems #lucas_sequence(num) should return an array containing the first num numbers in the lucas sequence
-rspec ./spec/problems_spec.rb:138 # Recursion Problems #prime_factorization(num) should return an array containing the prime factorization of num
