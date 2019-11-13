@@ -1,0 +1,101 @@
+require "byebug"
+def no_dupes(arr)
+    unique = []
+    arr.each { |ele| unique << ele if arr.find_all { |ele2| ele == ele2 }.length == 1 }
+    unique
+end
+
+def no_consecutive_repeats?(arr)
+    arr.each_with_index.none? { |ele, idx| arr[idx+1] && (arr[idx] == arr[idx+1]) }
+end
+
+def char_indices(str)
+    chars = Hash.new { |h, k| h[k] = Array.new }
+    str.each_char.with_index { |c, idx| chars[c] << idx }
+    chars
+end
+
+def longest_streak(str)
+    chars = char_indices(str)
+    
+    indices = chars.inject { |max, c| 
+        c[1].length >= max[1].length ? c : max
+    }
+
+    istart, iend = indices[1][0].to_i, indices[1][-1].to_i
+
+    str[istart..iend]
+end
+
+def bi_prime?(num)
+    primes = primes_up_to(num/2)
+    
+    primes.each_with_index { |p, i| 
+        primes[i..-1].each { |p2|  
+            return true if p2 * p == num
+        } 
+    }
+    false
+end
+
+def primes_up_to(num)
+    return [] if num < 2
+    primes = [2]
+    i = 3
+
+    while primes[-1] < num
+        if is_prime?(i)
+            primes << i
+        end
+        i += 1
+    end
+
+    primes.pop if primes[-1] > num
+
+    primes
+end
+
+def is_prime?(num)
+    return false if num < 2
+
+    (2...num).each do |factor|
+        if num % factor == 0
+            return false
+        end
+    end
+    
+    return true
+end
+
+def vigenere_cipher(str, keys)
+    str.each_char.with_index.map { |c, i| caesar_cipher(c, keys[i % keys.length]) }.join("")
+end
+
+def caesar_cipher(message, number)
+    number %= 26
+    message.each_codepoint.map { |c| (c>96 && c<123) ? (c+number > 122 ? (((c+number) % 123) + 97).chr : (c+number).chr) : c.chr }.join("")
+end
+
+def vowel_rotate(str)
+    vowels = Hash.new
+    rotated = Hash.new
+
+    #fill in our vowels
+    str.each_char.with_index { |chr, idx| vowels[idx] = chr if /[aeiou]/i.match?(chr) }
+    
+    #rotate them
+    vowels.keys.each_with_index { |k, i| 
+        rotated[k] = vowels[i-1]
+    }
+
+    #and replace em
+    str.each_char.with_index.map { |c, i| rotated[i] ? rotated[i] : c }
+end
+
+__END__
+rspec ./spec/problems_spec.rb:63 # General Problems #vowel_rotate(str) should return the unique elements of an array
+rspec ./spec/problems_spec.rb:76 # Proc Problems String#select should take a proc as an arg, and return the chars of the string that satisfy the proc
+rspec ./spec/problems_spec.rb:84 # Proc Problems String#map! should take a proc as an arg, and return the same string with each char mapped with the proc
+rspec ./spec/problems_spec.rb:115 # Recursion Problems #multiply(num_1, num_2) should return the product of the two numbers
+rspec ./spec/problems_spec.rb:127 # Recursion Problems #lucas_sequence(num) should return an array containing the first num numbers in the lucas sequence
+rspec ./spec/problems_spec.rb:138 # Recursion Problems #prime_factorization(num) should return an array containing the prime factorization of num
